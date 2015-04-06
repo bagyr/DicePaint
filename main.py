@@ -41,7 +41,7 @@ def rgb2lab(input_color):
     num = 0
     for value in xyz:
         if value > 0.008856:
-            value **= 1/3
+            value = value ** 1/3
         else:
             value = (7.787 * value) + (16 / 116)
         xyz[num] = value
@@ -69,11 +69,11 @@ def closest_color(color, color_array):
     for c in color_array:
         tmp_lab = rgb2lab(c)
         delta = math.sqrt(
-            (tmp_lab[0] - orig_lab[0]) ** 2 + (tmp_lab[1] - orig_lab[1]) ** 2 + (tmp_lab[2] - orig_lab[3]) ** 2)
+            (tmp_lab[0] - orig_lab[0]) ** 2 + (tmp_lab[1] - orig_lab[1]) ** 2 + (tmp_lab[2] - orig_lab[2]) ** 2)
         if delta < minim:
-            delta = minim
+            minim = delta
             out = c
-    return out
+    return tuple(out)
 
 
 def process(img_path, palete):
@@ -85,14 +85,15 @@ def process(img_path, palete):
         for j in range(0, hDices):
             box = pil_image.crop((i * w_step, j * h_step, (i + 1) * w_step, (j + 1) * h_step))
             stat = ImageStat.Stat(box)
-            out_image.putpixel((i, j), tuple(map(lambda x: int(math.ceil(x)), stat.mean)))
+            # out_image.putpixel((i, j), tuple(map(lambda x: int(math.ceil(x)), stat.mean)))
+            out_image.putpixel((i, j), closest_color(stat.mean, palete))
     return out_image
 
-num_colors = 5
+num_colors = 50
 rand_colors = [[randint(0, 255) for _ in range(3)] for _ in range(num_colors)]
 
 test_image = "./res/Lenna.png"
-proc_img = process(test_image)
+proc_img = process(test_image, rand_colors)
 
 window = pyglet.window.Window(width=800, height=600)
 
