@@ -90,12 +90,41 @@ def process(img_path, palette):
     return out_image
 
 
+class AbstractPalette(object):
+
+    def __init__(self, num):
+        self.palette = []
+        self.num = num
+
+    def get_palette(self):
+        if len(self.palette) == 0:
+            self.new_palette()
+        return self.palette
+
+    def new_palette(self):
+        self.palette = self.generate()
+
+    def __call__(self):
+        return self.palette
+
+    def generate(self):
+        raise NotImplemented()
+
+
+class RandomPalette(AbstractPalette):
+    def __init__(self, num):
+        AbstractPalette.__init__(self, num)
+
+    def generate(self):
+        return [[randint(0, 255) for _ in range(3)] for _ in range(self.num)]
+
+
 class MainWindow(pyglet.window.Window):
     test_image = "./res/Lenna.png"
-    num_colors = 50
+    num_colors = 25
 
     def __init__(self):
-        self.colors = []
+        self.palette = RandomPalette(self.num_colors)
         self.proc_img = None
         self.main_image = None
         self.main_tex = None
@@ -105,31 +134,33 @@ class MainWindow(pyglet.window.Window):
         super(MainWindow, self).__init__(width=800, height=600)
 
     def compute(self):
-        self.colors = self.rand_colors(self.num_colors)
-        self.proc_img = process(self.test_image, self.colors)
+        self.palette.new_palette()
+        self.proc_img = process(self.test_image, self.palette())
         self.main_image = pil_to_pyg(self.proc_img)
         self.main_tex = self.main_image.get_texture()
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
         self.main_tex.width = 500
         self.main_tex.height = 500
-        self.colors_widget = pil_to_pyg(colors_to_texture(self.colors))
+        self.colors_widget = pil_to_pyg(colors_to_texture(self.palette()))
         self.colors_tex = self.colors_widget.get_texture()
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
         self.colors_tex.width = 100
         self.colors_tex.height = 500
-
-    @staticmethod
-    def rand_colors(num):
-        return [[randint(0, 255) for _ in range(3)] for _ in range(num)]
 
     def on_draw(self):
         self.clear()
         self.main_tex.blit(0, 0)
         self.colors_tex.blit(600, 0)
 
-    # def on_key_press(self, symbol, modifiers):
-        # if symbol == key.SPACE:
-        #     self.colors = [[randint(0, 255) for _ in range(3)] for _ in range(num_colors)]
+    def on_key_press(self, symbol, modifiers):
+        if symbol == key.SPACE:
+            self.palette.new_palette()
+            self.compute()
+        elif symbol == key.ESCAPE:
+            self.dispatch_event('on_close')
+
+    def on_close(self):
+        self.close()
 
 
 if __name__ == '__main__':
