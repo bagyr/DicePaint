@@ -3,6 +3,7 @@ __author__ = 'arubtsov'
 from PIL import Image, ImageStat
 import pyglet
 from pyglet.gl import gl
+from pyglet.window import key
 import math
 from random import randint
 
@@ -76,7 +77,7 @@ def closest_color(color, color_array):
     return tuple(out)
 
 
-def process(img_path, palete):
+def process(img_path, palette):
     pil_image = Image.open(img_path)
     out_image = Image.new("RGB", (wDices, hDices))
     im_w, im_h = pil_image.size
@@ -85,35 +86,53 @@ def process(img_path, palete):
         for j in range(0, hDices):
             box = pil_image.crop((i * w_step, j * h_step, (i + 1) * w_step, (j + 1) * h_step))
             stat = ImageStat.Stat(box)
-            # out_image.putpixel((i, j), tuple(map(lambda x: int(math.ceil(x)), stat.mean)))
-            out_image.putpixel((i, j), closest_color(stat.mean, palete))
+            out_image.putpixel((i, j), closest_color(stat.mean, palette))
     return out_image
 
-num_colors = 50
-rand_colors = [[randint(0, 255) for _ in range(3)] for _ in range(num_colors)]
 
-test_image = "./res/Lenna.png"
-proc_img = process(test_image, rand_colors)
+class MainWindow(pyglet.window.Window):
+    test_image = "./res/Lenna.png"
+    num_colors = 50
 
-window = pyglet.window.Window(width=800, height=600)
+    def __init__(self):
+        self.colors = []
+        self.proc_img = None
+        self.main_image = None
+        self.main_tex = None
+        self.colors_widget = None
+        self.colors_tex = None
+        self.compute()
+        super(MainWindow, self).__init__(width=800, height=600)
 
-main_image = pil_to_pyg(proc_img)
-main_tex = main_image.get_texture()
-gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
-main_tex.width = 500
-main_tex.height = 500
-colors_widget = pil_to_pyg(colors_to_texture(rand_colors))
-colors_tex = colors_widget.get_texture()
-gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
-colors_tex.width = 100
-colors_tex.height = 300
+    def compute(self):
+        self.colors = self.rand_colors(self.num_colors)
+        self.proc_img = process(self.test_image, self.colors)
+        self.main_image = pil_to_pyg(self.proc_img)
+        self.main_tex = self.main_image.get_texture()
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
+        self.main_tex.width = 500
+        self.main_tex.height = 500
+        self.colors_widget = pil_to_pyg(colors_to_texture(self.colors))
+        self.colors_tex = self.colors_widget.get_texture()
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
+        self.colors_tex.width = 100
+        self.colors_tex.height = 500
 
-@window.event
-def on_draw():
-    window.clear()
-    main_tex.blit(0, 0)
-    colors_tex.blit(600, 0)
+    @staticmethod
+    def rand_colors(num):
+        return [[randint(0, 255) for _ in range(3)] for _ in range(num)]
+
+    def on_draw(self):
+        self.clear()
+        self.main_tex.blit(0, 0)
+        self.colors_tex.blit(600, 0)
+
+    # def on_key_press(self, symbol, modifiers):
+        # if symbol == key.SPACE:
+        #     self.colors = [[randint(0, 255) for _ in range(3)] for _ in range(num_colors)]
 
 
-pyglet.app.run()
+if __name__ == '__main__':
+    window = MainWindow()
+    pyglet.app.run()
 
