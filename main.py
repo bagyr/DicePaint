@@ -112,8 +112,6 @@ class AbstractPalette(object):
 
 
 class RandomPalette(AbstractPalette):
-    def __init__(self, num):
-        AbstractPalette.__init__(self, num)
 
     def generate(self):
         return [[randint(0, 255) for _ in range(3)] for _ in range(self.num)]
