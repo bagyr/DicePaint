@@ -118,6 +118,34 @@ class RandomPalette(AbstractPalette):
         return [[randint(0, 255) for _ in range(3)] for _ in range(self.num)]
 
 
+class Trie(object):
+        root = dict()
+
+        def add_word(self, word):
+            curr_dict = self.root
+            for letter in word:
+                curr_dict = curr_dict.setdefault(letter, {})
+            curr_dict.setdefault('_end_', '_end_')
+
+        def get_word(self, text):
+            curr_dict = self.root
+            predict = ''
+            for letter in text:
+                if letter in curr_dict:
+                    curr_dict = curr_dict[letter]
+                    predict += letter
+                else:
+                    return False
+            while '_end_' not in curr_dict:
+                if len(curr_dict) == 1:
+                    letter = curr_dict.keys().pop()
+                    predict += letter
+                    curr_dict = curr_dict[letter]
+                else:
+                    return False
+            return predict
+
+
 class InputWidget(object):
     text = ""
 
