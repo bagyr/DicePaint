@@ -4,6 +4,7 @@ from PIL import Image, ImageStat
 import pyglet
 from pyglet.gl import gl
 from pyglet.window import key
+from pyglet.text import Label
 import math
 from random import randint
 
@@ -96,6 +97,9 @@ class AbstractPalette(object):
         self.palette = []
         self.num = num
 
+    def __call__(self):
+        return self.palette
+
     def get_palette(self):
         if len(self.palette) == 0:
             self.new_palette()
@@ -104,17 +108,42 @@ class AbstractPalette(object):
     def new_palette(self):
         self.palette = self.generate()
 
-    def __call__(self):
-        return self.palette
-
     def generate(self):
-        raise NotImplemented()
+        raise NotImplementedError("Implement generate()")
 
 
 class RandomPalette(AbstractPalette):
 
     def generate(self):
         return [[randint(0, 255) for _ in range(3)] for _ in range(self.num)]
+
+
+class InputWidget(object):
+    text = ""
+
+    def __init__(self, prompt):
+        self.prompt = prompt
+
+    def add_char(self, sym):
+        if sym == key.BACKSPACE:
+            if len(self.text) > 0:
+                self.text = self.text[:-1]
+        elif (sym >= key.A) and (sym <= key.Z):
+            self.text += key.symbol_string(sym)
+        elif sym == key.TAB:
+            self.autocomplete(self.text)
+        elif sym == key.ENTER:
+            self.dispatch_text(self.text)
+            self.text = ""
+
+    def autocomplete(self, text):
+        pass
+
+    def dispatch_text(self, text):
+        pass
+
+    def get_widget(self):
+        return Label(self.prompt + self.text, x=100, y=100, anchor_x='left', anchor_y='top', font_size=36)
 
 
 class MainWindow(pyglet.window.Window):
@@ -128,6 +157,7 @@ class MainWindow(pyglet.window.Window):
         self.main_tex = None
         self.colors_widget = None
         self.colors_tex = None
+        self.input = InputWidget('>')
         self.compute()
         super(MainWindow, self).__init__(width=800, height=600)
 
@@ -149,6 +179,7 @@ class MainWindow(pyglet.window.Window):
         self.clear()
         self.main_tex.blit(0, 0)
         self.colors_tex.blit(600, 0)
+        self.input.get_widget().draw()
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.SPACE:
@@ -156,6 +187,8 @@ class MainWindow(pyglet.window.Window):
             self.compute()
         elif symbol == key.ESCAPE:
             self.dispatch_event('on_close')
+        else:
+            self.input.add_char(symbol)
 
     def on_close(self):
         self.close()
