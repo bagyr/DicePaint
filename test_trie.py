@@ -9,13 +9,13 @@ class TestTrie(TestCase):
 
     def setUp(self):
         self.t = Trie()
-        self.t.add_word('aaa')
-        self.t.add_word('asa')
-        self.t.add_word('sss')
+        self.t.add_word('aaa', 1)
+        self.t.add_word('asa', 2)
+        self.t.add_word('sss', 3)
 
     def test_add_word(self):
-        correct_dict = {'a': {'a': {'a': {'_end_': '_end_'}}, 's': {'a': {'_end_': '_end_'}}},
-                        's': {'s': {'s': {'_end_': '_end_'}}}}
+        correct_dict = {'a': {'a': {'a': {'_end_': 1}}, 's': {'a': {'_end_': 2}}},
+                        's': {'s': {'s': {'_end_': 3}}}}
         self.assertEquals(self.t.root, correct_dict)
 
     def test_get_word(self):
@@ -28,6 +28,12 @@ class TestTrie(TestCase):
         self.assertEqual(self.t.get_variants('a'), ['aaa', 'asa'])
         self.assertEqual(self.t.get_variants('aaa'), ['aaa'])
         self.assertEqual(self.t.get_variants('aa'), ['aaa'])
+
+    def test_get_content(self):
+        self.assertEqual(self.t.get_content('aaa'), 1)
+        self.assertEqual(self.t.get_content('asa'), 2)
+        self.assertEqual(self.t.get_content('sss'), 3)
+        self.assertFalse(self.t.get_content('worng'))
 
 if __name__ == '__main__':
     unittest.main()

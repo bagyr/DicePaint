@@ -6,11 +6,11 @@ class Trie(object):
     def __init__(self):
         self.root = dict()
 
-    def add_word(self, word):
+    def add_word(self, word, content):
         curr_dict = self.root
         for letter in word:
             curr_dict = curr_dict.setdefault(letter, {})
-        curr_dict.setdefault('_end_', '_end_')
+        curr_dict.setdefault('_end_', content)
 
     def get_word(self, text):
         curr_dict = self.root
@@ -29,6 +29,15 @@ class Trie(object):
             else:
                 return False
         return predict
+
+    def get_content(self, key):
+        curr_dict = self.root
+        for letter in key:
+            if letter in curr_dict:
+                curr_dict = curr_dict[letter]
+            else:
+                return False
+        return curr_dict['_end_']
 
     def get_variants(self, text):
         curr_dict = self.root
