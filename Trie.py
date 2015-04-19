@@ -42,11 +42,9 @@ class Trie(object):
     def get_variants(self, text):
         curr_dict = self.root
         out = []
-        i = 0
         for letter in text:
             if letter in curr_dict:
                 curr_dict = curr_dict[letter]
-                i += 1
             else:
                 return False
 
