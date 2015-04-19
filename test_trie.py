@@ -1,3 +1,4 @@
+import unittest
 from unittest import TestCase
 from Trie import Trie
 
@@ -25,5 +26,8 @@ class TestTrie(TestCase):
 
     def test_get_variants(self):
         self.assertEqual(self.t.get_variants('a'), ['aaa', 'asa'])
-        self.assertEqual(self.t.get_variants('aa'), ['aaa'])
         self.assertEqual(self.t.get_variants('aaa'), ['aaa'])
+        self.assertEqual(self.t.get_variants('aa'), ['aaa'])
+
+if __name__ == '__main__':
+    unittest.main()

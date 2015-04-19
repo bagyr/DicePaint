@@ -42,12 +42,11 @@ class Trie(object):
                 return False
 
         def traverse(word, root):
-            if '_end_' in root:
-                out.append(word)
-                return
             for k in root.keys():
-                word += k
-                traverse(word, root[k])
+                if k != '_end_':
+                    traverse(word + k, root[k])
+                else:
+                    out.append(word)
 
-        traverse(text[i:], curr_dict)
-        return out
+        traverse('', curr_dict)
+        return map(lambda s: text + s, out)

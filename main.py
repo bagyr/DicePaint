@@ -120,9 +120,11 @@ class RandomPalette(AbstractPalette):
 
 class InputWidget(object):
 
-    def __init__(self, prompt):
+    def __init__(self, prompt, x=100, y=100):
         self.prompt = prompt
         self.text = ''
+        self.x = x
+        self.y = y
 
     def add_char(self, sym):
         if sym == key.BACKSPACE:
@@ -143,7 +145,7 @@ class InputWidget(object):
         pass
 
     def get_widget(self):
-        return Label(self.prompt + self.text, x=100, y=100, anchor_x='left', anchor_y='top', font_size=36)
+        return Label(self.prompt + self.text, self.x, self.y, anchor_x='left', anchor_y='top', font_size=36)
 
 
 class MainWindow(pyglet.window.Window):
