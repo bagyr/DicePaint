@@ -46,7 +46,7 @@ class Trie(object):
                 if k != '_end_':
                     traverse(word + k, root[k])
                 else:
-                    out.append(word)
+                    out.append(text + word)
 
         traverse('', curr_dict)
-        return map(lambda s: text + s, out)
+        return out
