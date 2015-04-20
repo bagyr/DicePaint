@@ -48,12 +48,12 @@ class Trie(object):
             else:
                 return False
 
-        def traverse(word, root):
+        def traverse(root, word=''):
             for k in root.keys():
                 if k != '_end_':
-                    traverse(word + k, root[k])
+                    traverse(root[k], word + k)
                 else:
                     out.append(text + word)
 
-        traverse('', curr_dict)
+        traverse(curr_dict)
         return out
